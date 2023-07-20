@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<!-- <link rel="stylesheet" href="./css/index.css" media="all"> -->
+	<link rel="stylesheet" href="./css/css.css" media="all">
+	<script src="./js/jquery.min.js"></script>
+	<script>
+		$(function(){
+			$(window).scroll(function(){
+				var $this =$(this),
+						viewH =$(this).height(),//可见高度
+						contentH =$(this).get(0).scrollHeight,//内容高度
+						scrollTop =$(this).scrollTop();//滚动高度
+				if (scrollTop>=10){
+					$(".main-header").css("background-color","#fff")
+					$(".cp-header .content div p").css("color","#f14517")
+					$(".cp-header .content div div").css("color","#f14517")
+					$(".cp-header .content select").css("color","#f14517")
+					$(".cp-header .content .select").css("border","1px solid #f14517")
+					$(".cp-header .content div .button").css("border","1px solid #f14517")
+					$(".cp-menu .content div a").css("color","#f14517")
+					$(".cp-menu .transparent .active a").css("border-bottom","3px solid #f14517")
+					$(".cp-menu .transparent .active a").css("color","#fff")
+					$(".cp-menu .transparent .active").css("background-color","#f14517")
+					$('.cp-menu .transparent').attr("id","wxy");
+				}else if (scrollTop<10){
+					$(".main-header").css("background-color","")
+					$(".cp-header .content div p").css("color","")
+					$(".cp-header .content div div").css("color","")
+					$(".cp-header .content select").css("color","")
+					$(".cp-header .content .select").css("border","1px solid hsla(0, 0%, 100%, .5)")
+					$(".cp-header .content div .button").css("border","1px solid hsla(0, 0%, 100%, .5)")
+					$(".cp-menu .content div a").css("color","#fff")
+					$(".cp-menu .transparent .active a").css("border-bottom","3px solid #fff")
+					$(".cp-menu .transparent .active").css("background-color","")
+					$(".cp-menu .transparent .active a").css("color","#fff")
+					$('.cp-menu .transparent').attr("id","");
+				}
+			});
+			$(".cp-mengxiangfu .content .block .serve .serve_list").hover(function (){
+				var index = $(this).index();
+				$(this).find("div img").attr("src","img/white_"+index+".png");
+			},function (){
+				var index = $(this).index();
+				$(this).find("div img").attr("src","img/red_"+index+".png");
+			});
+
+
+			// 定义变量
+			var $slide = $('.cps .cp-banner .content');
+			var currentSlide = 0;
+
+			// 初始化
+			$slide.eq(currentSlide).css('left','0%');
+
+			// 点击按钮时切换幻灯片
+			$('.cps .cp-banner .content .cut .pre').click(function() {
+				$slide.eq(currentSlide).animate({left: '-100%'}, function() {
+					$(this).removeClass('active').css('left', '100%');
+				});
+				currentSlide++;
+				if (currentSlide >= $slide.length) {
+					currentSlide = 0;
+				}
+				$slide.eq(currentSlide).css('left', '100%');
+				$slide.eq(currentSlide).addClass('active').animate({left: 0});
+			});
+
+			$('.cps .cp-banner .content .cut .next').click(function() {
+				$slide.eq(currentSlide).animate({left: '100%'}, function() {
+					$(this).removeClass('active').css('left', '-100%');
+				});
+				currentSlide--;
+				if (currentSlide < 0) {
+					currentSlide = $slide.length - 1;
+				}
+				$slide.eq(currentSlide).css('left', '-100%');
+				$slide.eq(currentSlide).addClass('active').animate({left: 0});
+			});
+		});
+	</script>
+</head>
+<body>
+<div id="root-master">
+	<div class="cps">
+		<div class="main">
+			<div class="main-header" style="">
+				<div datav="0" class="cp-header">
+					<div class="content transparent">
+						<div class="fl title">
+							<p class="f1"></p>
+							<p class="f2">蒙享贷金融服务平台</p>
+							<p class="f3 cp-pointer"><span style="font-size: 13px;">Mengxiangdai financial service platform</span> </p>
+						</div>
+						<select class="fl ml20 select" style="outline: none;">
+							<option value="" style="color: black;">呼和浩特</option>
+							<option value="" style="color: black;">鄂尔多斯</option>
+							<option value="" style="color: black;">呼伦贝尔</option>
+						</select>
+						<div class="right buttons">
+							<div class="login fl button">登录</div>
+							<div class="vline"></div>
+							<div class="reg fl button">注册</div>
+						</div>
+					</div>
+				</div>
+				<div class="cp-menu">
+					<div class="content transparent">
+						<div class="item cp-pointer active"><a>首页</a></div>
+						<div class="item cp-pointer"><a>蒙享融</a></div>
+						<div class="item cp-pointer "><a>蒙享贷</a></div>
+						<div class="item cp-pointer "><a>蒙享保</a></div>
+						<div class="item cp-pointer "><a>蒙享服</a></div>
+						<div class="item cp-pointer "><a>政策新闻</a></div>
+					</div>
+					<div class="wline"></div>
+				</div>
+			</div>
+			<div class="main-content">
+				<div class="cp-banner">
+					<div class="content" style="background: url(img/beijing.png) center bottom no-repeat; width: 100%; height: 720px;">
+						<div class="cut">
+							<div class="pre">
+								<img src="./img/箭头向左.png"  style="width: 50px; height: 50px">
+							</div>
+							<div class="next">
+								<img src="./img/箭头向右.png" style="width: 50px; height: 50px">
+							</div>
+						</div>
+					</div>
+					<div class="content" style="background: url(img/download.png) center bottom no-repeat; width: 100%; height: 720px;">
+						<div class="cut">
+							<div class="pre">
+								<img src="./img/箭头向左.png"  style="width: 50px; height: 50px">
+							</div>
+							<div class="next">
+								<img src="./img/箭头向右.png" style="width: 50px; height: 50px">
+							</div>
+						</div>
+					</div>
+					<div class="content_2" style="width: 100%;">
+						<div class="overview" style="max-width: 1920px; margin: auto;"></div>
+						<div class="icons">
+							<div class="fl w20 cp-pointer chart">
+								<div class="fl mt10"><img src="img/注册用户.png" alt="加载失败"></div>
+								<div class="fl ml28">
+									<p class="f1">93418家</p>
+									<p class="f2">注册用户</p>
+								</div>
+							</div>
+							<div class="fl w20 cp-pointer chart">
+								<div class="fl mt10"><img src="img/融资服务-01.png" alt="加载失败"></div>
+								<div class="fl ml28">
+									<p class="f1">92020个</p>
+									<p class="f2">融资项目</p>
+								</div>
+							</div>
+							<div class="fl w20 cp-pointer chart">
+								<div class="fl mt10"><img src="img/组织机构.png" alt="加载失败"></div>
+								<div class="fl ml28">
+									<p class="f1">212个</p>
+									<p class="f2">金融机构</p>
+								</div>
+							</div>
+							<div class="fl w20 cp-pointer chart">
+								<div class="fl mt10">
+									<img src="img/金融产品.png" alt="加载失败">
+								</div>
+								<div class="fl ml28">
+									<p class="f1">237个</p>
+									<p class="f2">金融产品</p>
+								</div>
+							</div>
+							<div class="fl w20 cp-pointer chart">
+								<div class="fl mt10"><img src="img/授信详情-额度信息.png" alt="加载失败"></div>
+								<div class="fl ml28">
+									<p class="f1">1662033万元</p>
+									<p class="f2">授权金额</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="cp-mengxiangdai" id="dai">
+					<div class="content">
+						<div class="title">
+							<p class="f1" style="font-size: 30px;">蒙享贷</p>
+							<p class="wline"></p>
+						</div>
+						<div class="block">
+							<div class="jigou">
+								<div class="jg_left">
+									<div class="item_title">
+										<p class="s1">金融机构</p>
+										<p class="s2">financial institution</p>
+									</div>
+									<div class="item_content">
+										<div class="i">
+											<img src="./img/zhaoshang.png" >
+										</div>
+										<div class="i">
+											<img src="./img/jianshe.png" >
+										</div>
+										<div class="i">
+											<img src="./img/youchu.png" >
+										</div>
+										<div class="i">
+											<img src="./img/xinyong.png" >
+										</div>
+										<div class="i">
+											<img src="./img/nongye.png" >
+										</div>
+										<div class="i">
+											<img src="./img/zhongxin.png" >
+										</div>
+										<div class="i">
+											<img src="./img/mingsheng.png" >
+										</div>
+										<div class="i">
+											<img src="./img/jiaotong.png" >
+										</div>
+									</div>
+									<div class="see">
+										<p>查看更多 >> </p>
+									</div>
+								</div>
+								<div class="jg_right">
+									<div class="item_title">
+										<p class="s1">金融机构</p>
+										<p class="s2">financial institution</p>
+									</div>
+									<div class="right_content">
+										<div class="r_li">
+											<div class="r_list">
+												<div class="t2 t3">锡林政采贷</div>
+												<div class="t1">发布日期：2022-06-14</div>
+											</div>
+											<div class="r_list">
+												<div class="t2">4000万</div>
+												<div class="t1">额度</div>
+											</div>
+											<div class="r_list">
+												<div class="t2 t3">5.50%-9.00%</div>
+												<div class="t1">利率</div>
+											</div>
+											<div class="r_list">
+												<div class="t1 t4">标签</div>
+											</div>
+											<div class="r_list">
+												<div class="t2">1-3年</div>
+												<div class="t1">期限</div>
+											</div>
+										</div>
+
+										<div class="r_li">
+											<div class="r_list">
+												<div class="t2 t3">锡林政采贷</div>
+												<div class="t1">发布日期：2022-06-14</div>
+											</div>
+											<div class="r_list">
+												<div class="t2">4000万</div>
+												<div class="t1">额度</div>
+											</div>
+											<div class="r_list">
+												<div class="t2 t3">5.50%-9.00%</div>
+												<div class="t1">利率</div>
+											</div>
+											<div class="r_list">
+												<div class="t1 t4">标签</div>
+											</div>
+											<div class="r_list">
+												<div class="t2">1-3年</div>
+												<div class="t1">期限</div>
+											</div>
+										</div>
+
+										<div class="r_li">
+											<div class="r_list">
+												<div class="t2 t3">锡林政采贷</div>
+												<div class="t1">发布日期：2022-06-14</div>
+											</div>
+											<div class="r_list">
+												<div class="t2">4000万</div>
+												<div class="t1">额度</div>
+											</div>
+											<div class="r_list">
+												<div class="t2 t3">5.50%-9.00%</div>
+												<div class="t1">利率</div>
+											</div>
+											<div class="r_list">
+												<div class="t1 t4">标签</div>
+											</div>
+											<div class="r_list">
+												<div class="t2">1-3年</div>
+												<div class="t1">期限</div>
+											</div>
+										</div>
+
+										<div class="r_li">
+											<div class="r_list">
+												<div class="t2 t3">锡林政采贷</div>
+												<div class="t1">发布日期：2022-06-14</div>
+											</div>
+											<div class="r_list">
+												<div class="t2">4000万</div>
+												<div class="t1">额度</div>
+											</div>
+											<div class="r_list">
+												<div class="t2 t3">5.50%-9.00%</div>
+												<div class="t1">利率</div>
+											</div>
+											<div class="r_list">
+												<div class="t1 t4">标签</div>
+											</div>
+											<div class="r_list">
+												<div class="t2">1-3年</div>
+												<div class="t1">期限</div>
+											</div>
+										</div>
+									</div>
+									<div class="see">
+										<p>查看更多 >> </p>
+									</div>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="cp-mengxiangrong">
+					<div class="content">
+						<div class="title">
+							<p class="f1" style="font-size: 30px;">蒙享融</p>
+							<p class="wline"></p>
+						</div>
+						<div class="block">
+							<div class="homepage-market-content-main">
+								<div class="card cp-pointer">
+									<div id="f18">国有控股项目</div>
+									<div class="">卓资县旗*******建设项目</div>
+									<!-- <div id="f14a" title="不限">不限</div> -->
+									<div id="f32">
+										<p id="a">1*20万</p>
+									</div>
+									<div id="f14b">发布日期：2022-08-22</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="card cp-pointer">
+									<div id="f18">国有控股项目</div>
+									<div class="">卓资县旗*******建设项目</div>
+									<!-- <div id="f14a" title="不限">不限</div> -->
+									<div id="f32">
+										<p id="a">1*20万</p>
+									</div>
+									<div id="f14b">发布日期：2022-08-22</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="card cp-pointer">
+									<div id="f18">国有控股项目</div>
+									<div class="">卓资县旗*******建设项目</div>
+									<!-- <div id="f14a" title="不限">不限</div> -->
+									<div id="f32">
+										<p id="a">1*20万</p>
+									</div>
+									<div id="f14b">发布日期：2022-08-22</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="card cp-pointer">
+									<div id="f18">国有控股项目</div>
+									<div class="">卓资县旗*******建设项目</div>
+									<!-- <div id="f14a" title="不限">不限</div> -->
+									<div id="f32">
+										<p id="a">1*20万</p>
+									</div>
+									<div id="f14b">发布日期：2022-08-22</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="card cp-pointer" style="margin-left: 15px;">
+									<div id="f18">国有控股项目</div>
+									<div class="">卓资县旗*******建设项目</div>
+									<!-- <div id="f14a" title="不限">不限</div> -->
+									<div id="f32">
+										<p id="a">1*20万</p>
+									</div>
+									<div id="f14b">发布日期：2022-08-22</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="card cp-pointer">
+									<div id="f18">国有控股项目</div>
+									<div class="">卓资县旗*******建设项目</div>
+									<!-- <div id="f14a" title="不限">不限</div> -->
+									<div id="f32">
+										<p id="a">1*20万</p>
+									</div>
+									<div id="f14b">发布日期：2022-08-22</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="card cp-pointer">
+									<div id="f18">国有控股项目</div>
+									<div>卓资县旗*******建设项目</div>
+									<!-- <div id="f14a" title="不限">不限</div> -->
+									<div id="f32">
+										<p id="a">1*20万</p>
+									</div>
+									<div id="f14b">发布日期：2022-08-22</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="card cp-pointer">
+									<div id="f18">国有控股项目</div>
+									<div class="">卓资县旗*******建设项目</div>
+									<!-- <div id="f14a" title="不限">不限</div> -->
+									<div id="f32">
+										<p id="a">1*20万</p>
+									</div>
+									<div id="f14b">发布日期：2022-08-22</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+
+
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="cp-mengxiangbao">
+					<div class="content">
+						<div class="title">
+							<p class="f1" style="font-size: 30px;">蒙享保</p>
+							<p class="wline"></p>
+						</div>
+						<div class="block">
+							<div class="bao-page">
+								<div class="insurance-item">
+									<p class="h1">诉讼财产保全责任险</p>
+									<div class="h2">
+										民间借贷纠纷、工程合同纠纷、购销合同纠纷、贷款合同纠纷、交通肇事纠纷、融资租赁合同纠纷。
+									</div>
+									<div class="h2">保险金额：<p class="h3">500万</p>
+									</div>
+									<div class="h2">保险年限：<p class="h3">1年</p>
+									</div>
+									<div id="button" class="cp-pointer" style="left: 200px;">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="insurance-item">
+									<p class="h1">诉讼财产保全责任险</p>
+									<div class="h2">
+										民间借贷纠纷、工程合同纠纷、购销合同纠纷、贷款合同纠纷、交通肇事纠纷、融资租赁合同纠纷。
+									</div>
+									<div class="h2">保险金额：<p class="h3">500万</p>
+									</div>
+									<div class="h2">保险年限：<p class="h3">1年</p>
+									</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="insurance-item">
+									<p class="h1">诉讼财产保全责任险</p>
+									<div class="h2">
+										民间借贷纠纷、工程合同纠纷、购销合同纠纷、贷款合同纠纷、交通肇事纠纷、融资租赁合同纠纷。
+									</div>
+									<div class="h2">保险金额：<p class="h3">500万</p>
+									</div>
+									<div class="h2">保险年限：<p class="h3">1年</p>
+									</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="insurance-item">
+									<p class="h1">诉讼财产保全责任险</p>
+									<div class="h2">
+										民间借贷纠纷、工程合同纠纷、购销合同纠纷、贷款合同纠纷、交通肇事纠纷、融资租赁合同纠纷。
+									</div>
+									<div class="h2">保险金额：<p class="h3">500万</p>
+									</div>
+									<div class="h2">保险年限：<p class="h3">1年</p>
+									</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="insurance-item">
+									<p class="h1">诉讼财产保全责任险</p>
+									<div class="h2">
+										民间借贷纠纷、工程合同纠纷、购销合同纠纷、贷款合同纠纷、交通肇事纠纷、融资租赁合同纠纷。
+									</div>
+									<div class="h2">保险金额：<p class="h3">500万</p>
+									</div>
+									<div class="h2">保险年限：<p class="h3">1年</p>
+									</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+								<div class="insurance-item">
+									<p class="h1">诉讼财产保全责任险</p>
+									<div class="h2">
+										民间借贷纠纷、工程合同纠纷、购销合同纠纷、贷款合同纠纷、交通肇事纠纷、融资租赁合同纠纷。
+									</div>
+									<div class="h2">保险金额：<p class="h3">500万</p>
+									</div>
+									<div class="h2">保险年限：<p class="h3">1年</p>
+									</div>
+									<div id="button" class="cp-pointer">
+										<a>查看详情</a>
+									</div>
+								</div>
+							</div>
+
+
+						</div>
+					</div>
+				</div>
+				<div class="cp-mengxiangfu">
+					<div class="content">
+						<div class="title">
+							<p class="f1" style="font-size: 30px;">蒙享服</p>
+							<p class="wline"></p>
+						</div>
+						<div class="block">
+							<div class="serve">
+								<div class="serve_list cp-pointer">
+									<div class="sl">
+										<img src="img/red_0.png">
+									</div>
+									<div class="sp">
+										<p>信用服务</p>
+									</div>
+								</div>
+								<div class="serve_list cp-pointer">
+									<div class="sl">
+										<img src="img/red_1.png">
+									</div>
+									<div class="sp">
+										<p>信用查询</p>
+									</div>
+								</div>
+								<div class="serve_list cp-pointer">
+									<div class="sl">
+										<img src="img/red_2.png">
+									</div>
+									<div class="sp">
+										<p>担保服务</p>
+									</div>
+								</div>
+								<div class="serve_list cp-pointer">
+									<div class="sl" style="margin-top: 82px;">
+										<img src="img/red_3.png">
+									</div>
+									<div class="sp">
+										<p>财务审计</p>
+									</div>
+								</div>
+								<div class="serve_list cp-pointer">
+									<div class="sl">
+										<img src="img/red_4.png">
+									</div>
+									<div class="sp">
+										<p>咨询服务</p>
+									</div>
+								</div>
+								<div class="serve_list cp-pointer">
+									<div class="sl">
+										<img src="img/red_5.png">
+									</div>
+									<div class="sp">
+										<p>法律仲裁</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="cp-zhengcexinwen">
+					<div class="content">
+						<div class="title">
+							<p class="f1" style="font-size: 30px;">政策新闻</p>
+							<p class="wline"></p>
+						</div>
+						<div class="block">
+							<div class="news">
+								<div class="newslist fl w49 new_i" >
+									<div class="sty">
+										<a class="new cp-pointer" href="#" style="display: block;">
+											<div class="date fl">
+												<img src="img/li.png">
+											</div>
+											<div class="info fl">
+												<div class="f3">2021年紫金山英才先锋计划市级高层次创新创业人才项目申报公告</div>
+											</div>
+											<div class="time">[2022-12-10]</div>
+										</a>
+										<a class="new cp-pointer" href="#" style="display: block;">
+											<div class="date fl">
+												<img src="img/li.png">
+											</div>
+											<div class="info fl">
+												<div class="f3">2021年紫金山英才先锋计划市级高层次创新创业人才项目申报公告</div>
+											</div>
+											<div class="time">[2022-12-10]</div>
+										</a>
+										<a class="new cp-pointer" href="#" style="display: block;">
+											<div class="date fl">
+												<img src="img/li.png">
+											</div>
+											<div class="info fl">
+												<div class="f3">2021年紫金山英才先锋计划市级高层次创新创业人才项目申报公告</div>
+											</div>
+											<div class="time">[2022-12-10]</div>
+										</a>
+										<a class="new cp-pointer" href="#" style="display: block;">
+											<div class="date fl">
+												<img src="img/li.png">
+											</div>
+											<div class="info fl">
+												<div class="f3">2021年紫金山英才先锋计划市级高层次创新创业人才项目申报公告</div>
+											</div>
+											<div class="time">[2022-12-10]</div>
+										</a>
+										<a class="new cp-pointer" href="#" style="display: block;">
+											<div class="date fl">
+												<img src="img/li.png">
+											</div>
+											<div class="info fl">
+												<div class="f3">2021年紫金山英才先锋计划市级高层次创新创业人才项目申报公告</div>
+											</div>
+											<div class="time">[2022-12-10]</div>
+										</a>
+
+
+									</div>
+								</div>
+								<div class="newslist fl w49 new_i">
+									<div class="sty">
+										<a class="new cp-pointer" href="#" style="display: block;">
+											<div class="date fl">
+												<img src="img/li.png">
+											</div>
+											<div class="info fl">
+												<div class="f3">2021年紫金山英才先锋计划市级高层次创新创业人才项目申报公告</div>
+											</div>
+											<div class="time">[2022-12-10]</div>
+										</a>
+										<a class="new cp-pointer" href="#" style="display: block;">
+											<div class="date fl">
+												<img src="img/li.png">
+											</div>
+											<div class="info fl">
+												<div class="f3">2021年紫金山英才先锋计划市级高层次创新创业人才项目申报公告</div>
+											</div>
+											<div class="time">[2022-12-10]</div>
+										</a>
+										<a class="new cp-pointer" href="#" style="display: block;">
+											<div class="date fl">
+												<img src="img/li.png">
+											</div>
+											<div class="info fl">
+												<div class="f3">2021年紫金山英才先锋计划市级高层次创新创业人才项目申报公告</div>
+											</div>
+											<div class="time">[2022-12-10]</div>
+										</a>
+										<a class="new cp-pointer" href="#" style="display: block;">
+											<div class="date fl">
+												<img src="img/li.png">
+											</div>
+											<div class="info fl">
+												<div class="f3">2021年紫金山英才先锋计划市级高层次创新创业人才项目申报公告</div>
+											</div>
+											<div class="time">[2022-12-10]</div>
+										</a>
+										<a class="new cp-pointer" href="#" style="display: block;">
+											<div class="date fl">
+												<img src="img/li.png">
+											</div>
+											<div class="info fl">
+												<div class="f3">2021年紫金山英才先锋计划市级高层次创新创业人才项目申报公告</div>
+											</div>
+											<div class="time">[2022-12-10]</div>
+										</a>
+
+									</div>
+								</div>
+								<div class="MoreBtnContent">
+									<button type="button" class="ant-btn">
+										<span>查看更多</span>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="main-footer">
+				<div class="cp-footer">
+					<div class="content">
+						<div class="info clearfix">
+							<div class="left">
+								<p class="font">地址：内蒙古自治区呼和浩特市赛罕区如意开发区晨光街2号呼和浩特科创中心</p>
+								<p>
+									<span class="font" >电话：0471-6659368</span>
+									<span class="cp-pointer font" >蒙ICP备：17002566号-1</span>
+									<span class="font">内蒙古信用促进会</span>
+								</p>
+							</div>
+							<div class=" right imgs">
+								<div class="img-box">
+									<img class="phone" alt="二维码" src="./img/二维码1.png" >
+								</div>
+								<div class="img-box">
+									<img class="phone " alt="二维码" src="./img/二维码2.png">
+								</div>
+								<div class="img-box">
+									<img class="phone " alt="二维码" src="./img/二维码3.png">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+
+</html>
