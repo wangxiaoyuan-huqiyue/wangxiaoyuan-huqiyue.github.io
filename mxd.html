@@ -6,8 +6,23 @@
 	<!-- <link rel="stylesheet" href="./css/index.css" media="all"> -->
 	<link rel="stylesheet" href="./css/css.css" media="all">
 	<script src="./js/jquery.min.js"></script>
+	<script src="./js/public.js"></script>
 	<script>
 		$(function(){
+			var url = window.location.search.substring(1);
+			if (url == '') {
+				return false;
+			}
+			var combina = ['','']
+			var paramsArr = url.split('&');
+			for (var i = 0; i < paramsArr.length; i++) {
+				console.log(paramsArr[i])
+				combina[i] = paramsArr[i].split("=")[1];
+			}
+			if (combina[0]!=login[0].username||combina[1]!=login[0].password){
+				console.log("不正确")
+				$("body").text("密码或账号错误")
+			}
 			$(window).scroll(function(){
 				var $this =$(this),
 						viewH =$(this).height(),//可见高度
@@ -41,10 +56,10 @@
 			});
 			$(".cp-mengxiangfu .content .block .serve .serve_list").hover(function (){
 				var index = $(this).index();
-				$(this).find("div img").attr("src","img/white_"+index+".png");
+				$(this).find("div img").attr("src","img/white_"+mxd+".png");
 			},function (){
 				var index = $(this).index();
-				$(this).find("div img").attr("src","img/red_"+index+".png");
+				$(this).find("div img").attr("src","img/red_"+mxd+".png");
 			});
 
 
