@@ -36,7 +36,7 @@
 					let password = $('#password').val()
 					let index = login.username.indexOf(username)
 					if (index>=0){
-						let menu = ['compass.html','plane.html','sokoban.html','catchFish']
+						let menu = ['compass.html','plane.html','sokoban.html','catchFish.html','fruit.html']
 						if (login.password[index]==password){
 							index = Math.floor((Math.random()*menu.length))
 							$(window).attr('location',menu[index]+'?username='+username+'&password='+password);
