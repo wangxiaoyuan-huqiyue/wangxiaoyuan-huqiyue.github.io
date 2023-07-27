@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>jQuery手机端遮罩弹出菜单代码</title>
+<script src="js/public.js"></script>
+<script src="js/jquery.min.js"></script>
+<script src="js/menu.js"></script> <!-- Resource jQuery -->
+<script>
+	verifyLogin()
+	$(function(){
+		$("#quit").click(function(){
+			localStorage.setItem("username",'')
+			localStorage.setItem('password','')
+			let username = $('#username').val()
+			let password = $('#password').val()
+			$(window).attr('location','index.html')
+		})
+	});
+</script>
+<link rel="stylesheet" href="css/reset.css"> <!-- CSS reset -->
+
+<link rel="stylesheet" href="css/style.css"> <!-- Resource style -->
+</head>
+<body>
+
+<div class="sucaihuo-container">
+	<section class="cd-section">
+		<a class="cd-bouncy-nav-trigger" href="#0">显示菜单</a>
+	</section>
+	<div class="cd-bouncy-nav-modal">
+		<nav>
+			<ul class="cd-bouncy-nav">
+				<li><a href="compass.html">动态时钟</a></li>
+				<li><a href="plane.html">简易飞机大战</a></li>
+				<li><a href="sokoban.html">推箱子小游戏</a></li>
+				<li><a href="catchFish.html">捕鱼达人</a></li>
+				<li><a href="fruit.html">水果忍者</a></li>
+				<li><a href="#" id="quit">退出</a></li>
+			</ul>
+		</nav>
+		<a href="#0" class="cd-close">Close modal</a>
+	</div>
+</div>
+
+
+
+</body>
+</html>

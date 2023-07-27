@@ -2,27 +2,24 @@ var login = {
     username:['huqiyue','wangxiaoyuan'],
     password:['123456','111111']
 }
-function verifyLogin(){
-    var url = window.location.search.substring(1);
-    if (url == '') {
-        $(window).attr('location','index.html');
-    }
-    var combina = ['','']
-    var paramsArr = url.split('&');
-    for (var i = 0; i < paramsArr.length; i++) {
-        console.log(paramsArr[i])
-        combina[i] = paramsArr[i].split("=")[1];
-    }
-    let params = {username: combina[0],password: combina[1]}
-    let index = login.username.indexOf(combina[0]);
-    if (index == -1) {
-        $(window).attr('location','index.html');
-        // $("body").text("密码或账号错误")
-    }else {
-        if (login.password[index] != combina[1]){
-            $(window).attr('location','index.html');
-            // $("body").text("密码或账号错误")
-        }
 
+function verifyLogin(){
+    let username = localStorage.getItem('username')
+    let password = localStorage.getItem('password')
+    let index = login.username.indexOf(username);
+    if (!varLogin(username,password)){
+        $(window).attr('location','index.html');
     }
+    var url = window.location.pathname.split('/')[2];
+    console.log(url+':校验通过')
+}
+
+function varLogin(username, password) {
+    let index = login.username.indexOf(username)
+    if (index>=0){
+        if (login.password[index]==password){
+            return true;
+        }
+    }
+    return false;
 }
