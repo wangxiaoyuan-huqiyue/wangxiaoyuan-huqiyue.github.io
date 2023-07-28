@@ -30,8 +30,9 @@
       <strong>We're sorry but soucecode doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
     <div class="container">
+      <input id="input" type="text">
+      <button id="custonBtn" onclick="video.setSrc(document.getElementById('input').value),video.play()">切换源</button>
       <div id="video"></div>
-      <!-- <button id="custonBtn">自定义按钮</button> -->
     </div>
   </body>
   <script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
@@ -45,7 +46,8 @@
       // type: 'mp4',
       src: 'https://satellitepull.cnr.cn/live/wxynjtgb/playlist.m3u8', // CCTV1网络直播测试地址
       type: 'hls',
-      slideControl: false, // 是否空闲时隐藏控件栏
+      poster:'https://live.fanmingming.com/radio/北京音乐广播.png',
+      slideControl: true, // 是否空闲时隐藏控件栏
       loop: true,
       bigPlayMenu: true,
       // playbackRate: 2,
@@ -54,7 +56,7 @@
     video.addEventListener('error', (event) => {
       console.log(event)
     })
-    // video.addCustomMenu(document.getElementById('custonBtn'))
-    // video.addCustomMenu(document.getElementById('custonBtn'), video.getVolumeMenu())
+    video.addCustomMenu(document.getElementById('input'),video.getVolumeMenu())
+    video.addCustomMenu(document.getElementById('custonBtn'),document.getElementById('input'))
   </script>
 </html>
