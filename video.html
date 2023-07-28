@@ -24,40 +24,73 @@
         height: 500px;
       }
     </style>
-  <link href="css/video.css" rel="stylesheet"></head>
-  <body>
-    <noscript>
-      <strong>We're sorry but soucecode doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div class="container">
-      <input id="input" type="text">
-      <button id="custonBtn" onclick="video.setSrc(document.getElementById('input').value),video.play()">切换源</button>
-      <div id="video"></div>
+<link href="css/video.css" rel="stylesheet"></head>
+<body>
+  <noscript>
+    <strong>We're sorry but soucecode doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+  </noscript>
+  <div class="container">
+    <input id="input" type="text">
+    <button id="custonBtn" onclick="video.setSrc(document.getElementById('input').value),video.play()">切换源</button>
+    <div id="video"></div>
+    <div style="display: flex" id="menu">
+      <ul>
+        <li>123</li>
+        <li>123</li>
+        <li>123</li>
+        <li>123</li>
+        <li>123</li>
+      </ul>
+      <ul style="padding-left: 180px">
+        <li>123</li>
+        <li>123</li>
+        <li>123</li>
+        <li>123</li>
+        <li>123</li>
+      </ul>
+      <ul style="padding-left: 180px">
+        <li>123</li>
+        <li>123</li>
+        <li>123</li>
+        <li>123</li>
+        <li>123</li>
+      </ul>
     </div>
-  </body>
-  <script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
-  <script type="text/javascript" src="js/video.js"></script>
-  <script src="js/public.js"></script>
-  <script>
-    verifyLogin()
-    var videoDom = document.getElementById('video')
-    var video = PluginVideo.create(videoDom, {
-      // src: 'https://blz-videos.nosdn.127.net/1/OverWatch/AnimatedShots/Overwatch_AnimatedShot_Bastion_TheLastBastion.mp4', // 播放地址
-      // type: 'mp4',
-      src: '广播拉取/内蒙古音乐之声.m3u8', // CCTV1网络直播测试地址
-      type: 'hls',
-      poster:'https://live.fanmingming.com/radio/北京音乐广播.png',
-      slideControl: true, // 是否空闲时隐藏控件栏
-      loop: true,
-      bigPlayMenu: true,
-      // playbackRate: 2,
-      autoplay: false // 自动播放
-    })
-    video.addEventListener('error', (event) => {
-      console.log(event)
-    })
-    video.addCustomMenu(document.getElementById('input'),video.getVolumeMenu())
-    video.addCustomMenu(document.getElementById('custonBtn'),document.getElementById('input'))
-  </script>
 
+  </div>
+</body>
+<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="js/video.js"></script>
+<script src="js/public.js"></script>
+<script>
+  verifyLogin()
+  var videoDom = document.getElementById('video')
+  var video = PluginVideo.create(videoDom, {
+    // src: 'https://blz-videos.nosdn.127.net/1/OverWatch/AnimatedShots/Overwatch_AnimatedShot_Bastion_TheLastBastion.mp4', // 播放地址
+    // type: 'mp4',
+    src: 'https://satellitepull.cnr.cn/live/wx32hljyygb/playlist.m3u8', // CCTV1网络直播测试地址
+    type: 'hls',
+    poster:'https://live.fanmingming.com/radio/北京音乐广播.png',
+    slideControl: true, // 是否空闲时隐藏控件栏
+    loop: true,
+    bigPlayMenu: true,
+    // playbackRate: 2,
+    autoplay: false // 自动播放
+  })
+  video.addEventListener('error', (event) => {
+    console.log(event)
+  })
+  video.addCustomMenu(document.getElementById('input'),video.getVolumeMenu())
+  video.addCustomMenu(document.getElementById('custonBtn'),document.getElementById('input'))
+
+  let menu = $('#menu').find('ul')
+  console.log($('#menu'))
+  let index = 0;
+  broadcast.forEach(function (item) {
+    menu.eq(index%3).append("<li style='cursor:pointer'>"+item.fileName+"</li>")
+    menu.eq(index%3).children().last().attr('id',item.fileName)
+    $("#"+item.fileName).attr('onclick','video.setSrc("'+item.fileUrl+'"),video.play()');
+    index++
+  })
+</script>
 </html>
