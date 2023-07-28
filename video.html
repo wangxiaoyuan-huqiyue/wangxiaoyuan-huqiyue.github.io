@@ -44,7 +44,7 @@
     var video = PluginVideo.create(videoDom, {
       // src: 'https://blz-videos.nosdn.127.net/1/OverWatch/AnimatedShots/Overwatch_AnimatedShot_Bastion_TheLastBastion.mp4', // 播放地址
       // type: 'mp4',
-      src: 'https://satellitepull.cnr.cn/live/wxynjtgb/playlist.m3u8', // CCTV1网络直播测试地址
+      src: '电视拉取/CCTV1.m3u8', // CCTV1网络直播测试地址
       type: 'hls',
       poster:'https://live.fanmingming.com/radio/北京音乐广播.png',
       slideControl: true, // 是否空闲时隐藏控件栏
@@ -59,4 +59,5 @@
     video.addCustomMenu(document.getElementById('input'),video.getVolumeMenu())
     video.addCustomMenu(document.getElementById('custonBtn'),document.getElementById('input'))
   </script>
+
 </html>

@@ -1,0 +1,3 @@
+#EXTM3U
+#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=223000
+http://audiows010.cnr.cn/live/wyzs192/playlist.m3u8?wsSession=bab89353c0eac07bccd8885d-169052727914668&wsIPSercert=ae7dbb30b511ee610e0c0e76436caea0&wsMonitor=0

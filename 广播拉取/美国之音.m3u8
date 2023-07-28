@@ -1,0 +1,4 @@
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-STREAM-INF:BANDWIDTH=128122,CODECS="mp4a.40.2"
+https://voa-ingest.akamaized.net/hls/live/2035206/151_124L/VOA_151_124L/chunklist.m3u8

@@ -1,6 +1,6 @@
 var login = {
-    username:['huqiyue','wangxiaoyuan'],
-    password:['123456','111111']
+    "username":['huqiyue','wangxiaoyuan'],
+    "password":['123456','111111']
 }
 
 function verifyLogin(){
