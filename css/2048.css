@@ -1,0 +1,37 @@
+p{
+	font-size: 30px;
+}
+input{
+	width: 100px;
+	padding: 10px 10px;
+	background-color: #8f7a66;
+	color: white;
+	border-radius: 10px;
+	outline: none;
+}
+#div1{
+	position: absolute;
+	color: #8f7a66;
+	width: 400px;
+}
+.game{
+	width: 460px;
+	height: 460px;
+	padding: 20px;
+	background-color: #bbada0;
+	border-radius: 15px;
+	position: absolute;
+	left:400px ;
+}
+.gride-cell{
+	width: 100px;
+	height: 100px;
+	border-radius: 6px;
+	background-color: #ccc0b3;
+	position: relative;
+	float: left;
+	margin: 7.5px;
+	text-align: center;
+	line-height:100px ;
+	font-size: 35px;
+}
