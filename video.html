@@ -89,7 +89,7 @@
   broadcast.forEach(function (item) {
     menu.eq(index%3).append("<li style='cursor:pointer'>"+item.fileName+"</li>")
     menu.eq(index%3).children().last().attr('id',item.fileName)
-    $("#"+item.fileName).attr('onclick','video.setSrc("'+item.fileUrl+'"),video.play()');
+    $("#"+item.fileName).attr('onclick','video.setSrc("'+item.fileUrl+'"),video.play(),video.setPoster("'+item.fileImg+'")');
     index++
   })
 </script>
