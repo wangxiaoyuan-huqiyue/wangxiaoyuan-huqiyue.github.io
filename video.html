@@ -71,11 +71,23 @@
   let menu = $('#menu').find('ul')
   console.log($('#menu'))
   let index = 0;
+  let iii = [1,2,3]
   broadcast.forEach(function (item) {
     console.log(item)
     menu.eq(index%3).append("<li style='cursor:pointer'>"+item.fileName+"</li>")
     menu.eq(index%3).children().last().attr('id',"xxx"+index)
     $("#xxx"+index).attr('onclick','video.setSrc("'+item.fileUrl+'"),video.play(),video.setPoster("'+item.fileImg+'")');
+    index++
+  })
+  iii.forEach(function (item) {
+    menu.eq(index%3).append("<li>+++++++++++</li>")
+    index++
+  })
+  broadcastNot.forEach(function (item) {
+    console.log(item)
+    menu.eq(index%3).append("<li style='cursor:pointer'>"+item.fileName+"</li>")
+    menu.eq(index%3).children().last().attr('id',"xxx"+index)
+    $("#xxx"+index).attr('onclick','video.setSrc("广播拉取/'+item.fileName+'.m3u8"),video.play(),video.setPoster("'+item.fileImg+'")');
     index++
   })
 </script>
