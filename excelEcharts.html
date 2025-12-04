@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel散点图生成器</title>
+  <!-- 引入外部资源 - 修复ECharts中文支持 -->
+  <script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<!--  <link href="css/font-awesome.min.css" rel="stylesheet">-->
+  <!-- 替换为支持中文的ECharts CDN，确保字符编码正确 -->
+  <script src="js/echarts.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="js/xlsx.full.min.js" type="text/javascript" charset="utf-8"></script>
+  <!-- 引入Tailwind CSS -->
+  <script src="js/public.js"></script>
+  <script src="js/tailwindcss.js"></script>
+  
+  <!-- 配置Tailwind自定义主题 -->
+  <script>
+    verifyLogin()
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3b82f6',
+            secondary: '#64748b',
+            accent: '#10b981',
+            dark: '#1e293b',
+            light: '#f8fafc'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif', 'SimHei', '黑体'], // 添加中文字体
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-shadow {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+      .transition-custom {
+        transition: all 0.3s ease;
+      }
+    }
+  </style>
+  
+  <!-- 全局样式 - 确保中文显示正常 -->
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif, 'SimHei', '黑体', 'Microsoft YaHei', '微软雅黑';
+    }
+    /* 修复ECharts中文标签截断问题 */
+    .ec-legend-item-text, .ec-axis-label, .ec-title {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+  <!-- 顶部导航 -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-bar-chart text-primary text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold text-primary">Excel散点图生成器</h1>
+      </div>
+      <div class="hidden md:flex space-x-4">
+        <button id="downloadChartBtn" class="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-lg transition-custom flex items-center">
+          <i class="fa fa-download mr-2"></i>下载图表
+        </button>
+        <button id="resetBtn" class="bg-gray-200 hover:bg-gray-300 text-dark px-4 py-2 rounded-lg transition-custom flex items-center">
+          <i class="fa fa-refresh mr-2"></i>重置
+        </button>
+      </div>
+      <!-- 移动端菜单按钮 -->
+      <button id="mobileMenuBtn" class="md:hidden text-dark text-xl">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+    <!-- 移动端菜单 -->
+    <div id="mobileMenu" class="hidden md:hidden bg-white border-t">
+      <div class="container mx-auto px-4 py-2 flex flex-col space-y-2">
+        <button id="mobileDownloadChartBtn" class="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-lg transition-custom flex items-center justify-center">
+          <i class="fa fa-download mr-2"></i>下载图表
+        </button>
+        <button id="mobileResetBtn" class="bg-gray-200 hover:bg-gray-300 text-dark px-4 py-2 rounded-lg transition-custom flex items-center justify-center">
+          <i class="fa fa-refresh mr-2"></i>重置
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主要内容 -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <!-- 上传区域 -->
+    <section class="bg-white rounded-xl p-6 card-shadow mb-8">
+      <h2 class="text-xl font-semibold mb-4 flex items-center">
+        <i class="fa fa-upload text-primary mr-2"></i>上传Excel文件
+      </h2>
+      <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-custom cursor-pointer" id="dropArea">
+        <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden">
+        <i class="fa fa-file-excel-o text-5xl text-gray-400 mb-4"></i>
+        <p class="text-gray-600 mb-4">拖放Excel文件到此处，或点击选择文件</p>
+        <button id="selectFileBtn" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-custom">
+          选择Excel文件
+        </button>
+        <p class="text-gray-400 text-sm mt-4">支持 .xlsx 和 .xls 格式</p>
+      </div>
+      <div id="fileInfo" class="hidden mt-4 p-4 bg-gray-50 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <i class="fa fa-file-excel-o text-primary mr-2"></i>
+            <span id="fileName" class="font-medium"></span>
+          </div>
+          <button id="removeFileBtn" class="text-red-500 hover:text-red-700 transition-custom">
+            <i class="fa fa-times-circle"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 数据预览区域 -->
+    <section id="dataPreviewSection" class="bg-white rounded-xl p-6 card-shadow mb-8 hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold flex items-center">
+          <i class="fa fa-table text-primary mr-2"></i>数据预览
+        </h2>
+        <button id="generateChartBtn" class="bg-accent hover:bg-accent/90 text-white px-6 py-3 rounded-lg transition-custom flex items-center">
+          <i class="fa fa-line-chart mr-2"></i>生成图表
+        </button>
+      </div>
+      <div class="overflow-x-auto max-h-80 overflow-y-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50 sticky top-0">
+            <tr id="tableHeader"></tr>
+          </thead>
+          <tbody id="tableBody" class="bg-white divide-y divide-gray-200"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 图表区域 -->
+    <section id="chartSection" class="bg-white rounded-xl p-6 card-shadow mb-8 hidden">
+      <h2 class="text-xl font-semibold mb-4 flex items-center">
+        <i class="fa fa-line-chart text-primary mr-2"></i>图表
+      </h2>
+      <div class="relative h-[500px]">
+        <!-- ECharts容器 -->
+        <div id="scatterChart" class="w-full h-full"></div>
+        <div id="chartLoading" class="absolute inset-0 flex items-center justify-center bg-white/80 hidden">
+          <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mb-4"></div>
+            <p class="text-gray-600">生成图表中...</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 图表设置 -->
+      <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+        <h3 class="text-lg font-medium mb-3">图表设置</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">图表标题</label>
+            <input type="text" id="chartTitle" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="散点图">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">X轴标签</label>
+            <input type="text" id="xAxisLabel" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="X轴">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Y轴标签</label>
+            <input type="text" id="yAxisLabel" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="Y轴">
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">点大小</label>
+            <input type="range" id="pointSize" min="4" max="20" value="8" class="w-full accent-primary">
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span>小</span>
+              <span id="pointSizeValue">8</span>
+              <span>大</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">透明度</label>
+            <input type="range" id="pointAlpha" min="0.2" max="1" step="0.1" value="0.7" class="w-full accent-primary">
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span>透明</span>
+              <span id="pointAlphaValue">0.7</span>
+              <span>不透明</span>
+            </div>
+          </div>
+        </div>
+        <!-- 图表类型选择 -->
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">图表类型</label>
+          <div class="flex items-center space-x-4">
+            <label class="inline-flex items-center">
+              <input type="radio" id="chartTypeScatter" name="chartType" value="scatter" checked class="accent-primary">
+              <span class="ml-2">散点图</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" id="chartTypeLine" name="chartType" value="line" class="accent-primary">
+              <span class="ml-2">折线图</span>
+            </label>
+          </div>
+        </div>
+        <!-- 新增：X轴类型选择（当X轴为汉字时使用） -->
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">X轴类型</label>
+          <div class="flex items-center space-x-4">
+            <label class="inline-flex items-center">
+              <input type="radio" id="xAxisTypeAuto" name="xAxisType" value="auto" checked class="accent-primary">
+              <span class="ml-2">自动检测（默认）</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" id="xAxisTypeCategory" name="xAxisType" value="category" class="accent-primary">
+              <span class="ml-2">分类轴（汉字/文本）</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" id="xAxisTypeValue" name="xAxisType" value="value" class="accent-primary">
+              <span class="ml-2">数值轴（数字）</span>
+            </label>
+          </div>
+        </div>
+        <!-- X轴标签显示设置 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">X轴标签间隔</label>
+            <select id="xAxisLabelInterval" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="auto">自动（推荐）</option>
+              <option value="0">显示全部</option>
+              <option value="1">每2个显示1个</option>
+              <option value="2">每3个显示1个</option>
+              <option value="4">每5个显示1个</option>
+              <option value="9">每10个显示1个</option>
+              <option value="19">每20个显示1个</option>
+              <option value="49">每50个显示1个</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">控制X轴标签显示密度，避免标签重叠</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">X轴标签旋转角度</label>
+            <input type="range" id="xAxisLabelRotate" min="0" max="90" value="45" step="15" class="w-full accent-primary">
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span>0°</span>
+              <span id="xAxisLabelRotateValue">45°</span>
+              <span>90°</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">旋转角度越大，标签占用空间越小</p>
+          </div>
+        </div>
+        <button id="updateChartBtn" class="mt-4 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-custom">
+          应用设置
+        </button>
+      </div>
+    </section>
+
+    <!-- 空状态提示 -->
+    <section id="emptyState" class="flex flex-col items-center justify-center py-16 text-center">
+      <div class="bg-white p-8 rounded-xl card-shadow max-w-md w-full">
+        <i class="fa fa-bar-chart text-6xl text-gray-300 mb-4"></i>
+        <h2 class="text-xl font-semibold mb-2">还没有生成图表</h2>
+        <p class="text-gray-600 mb-6">上传Excel文件，将第一列作为X轴，其他列作为Y轴系列，生成专业的散点图</p>
+        <button id="emptyStateUploadBtn" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-custom">
+          上传Excel文件
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-6">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <p class="text-gray-400">© 2025 Excel散点图生成器 | 专业数据可视化工具</p>
+        </div>
+        <div class="flex space-x-4">
+          <a href="#" class="text-gray-400 hover:text-white transition-custom">
+            <i class="fa fa-question-circle"></i> 帮助
+          </a>
+          <a href="#" class="text-gray-400 hover:text-white transition-custom">
+            <i class="fa fa-info-circle"></i> 关于
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 通知组件 -->
+  <div id="notification" class="fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center z-50">
+    <i id="notificationIcon" class="mr-2"></i>
+    <span id="notificationText"></span>
+  </div>
+
+  <script>
+    // 全局变量
+    let excelData = null;
+    let scatterChart = null; // 存储ECharts实例
+    let chartConfig = {
+      pointSize: 8,
+      pointAlpha: 0.7,
+      chartTitle: '散点图',
+      xAxisLabel: 'X轴',
+      yAxisLabel: 'Y轴',
+      xAxisType: 'auto', // 新增：X轴类型配置
+      xAxisLabelInterval: 'auto', // X轴标签显示间隔：'auto'自动，或数字（每N个显示一个）
+      xAxisLabelRotate: 45, // X轴标签旋转角度
+      chartType: 'scatter' // 图表类型：'scatter'散点图 或 'line'折线图
+    };
+
+    // 检查必需的库是否加载成功
+    function checkLibraries() {
+      const missingLibs = [];
+      if (typeof jQuery === 'undefined' || typeof $ === 'undefined') {
+        missingLibs.push('jQuery');
+      }
+      if (typeof echarts === 'undefined') {
+        missingLibs.push('ECharts');
+      }
+      if (typeof XLSX === 'undefined') {
+        missingLibs.push('XLSX.js');
+      }
+      
+      if (missingLibs.length > 0) {
+        alert('错误：以下库加载失败，请检查网络连接：\n' + missingLibs.join(', '));
+        return false;
+      }
+      return true;
+    }
+
+    // jQuery DOM就绪事件
+    $(document).ready(function() {
+      // 检查库是否加载成功
+      if (!checkLibraries()) {
+        return;
+      }
+      
+      // 初始化事件监听
+      initEventListeners();
+      console.log('Excel散点图生成器（jQuery + ECharts版）已初始化');
+    });
+
+    // 初始化事件监听
+    function initEventListeners() {
+      // 先解绑所有事件，防止重复绑定
+      $('#selectFileBtn, #emptyStateUploadBtn').off('click.fileSelect');
+      $('#fileInput').off('change.fileSelect');
+      $('#dropArea').off('dragover.fileDrop dragleave.fileDrop drop.fileDrop click.fileDrop');
+      $('#removeFileBtn').off('click.removeFile');
+      $('#generateChartBtn').off('click.generateChart');
+      $('#mobileMenuBtn').off('click.mobileMenu');
+      $('#downloadChartBtn, #mobileDownloadChartBtn').off('click.downloadChart');
+      $('#resetBtn, #mobileResetBtn').off('click.resetAll');
+      $('#pointSize').off('input.pointSize');
+      $('#pointAlpha').off('input.pointAlpha');
+      $('#chartTitle').off('input.chartTitle');
+      $('#xAxisLabel').off('input.xAxisLabel');
+      $('#yAxisLabel').off('input.yAxisLabel');
+      $('input[name="xAxisType"]').off('change.xAxisType');
+      $('#updateChartBtn').off('click.updateChart');
+      
+      // 文件选择相关
+      $('#selectFileBtn, #emptyStateUploadBtn').on('click.fileSelect', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#fileInput').trigger('click');
+      });
+      
+      // 文件选择事件
+      $('#fileInput').on('change.fileSelect', handleFileSelect);
+      
+      // 拖放功能
+      $('#dropArea').on('dragover.fileDrop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).addClass('border-primary bg-primary/5');
+      }).on('dragleave.fileDrop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass('border-primary bg-primary/5');
+      }).on('drop.fileDrop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass('border-primary bg-primary/5');
+        
+        const files = e.originalEvent.dataTransfer.files;
+        if (files && files.length > 0) {
+          // 直接传递文件对象，因为files属性是只读的
+          handleFileSelect({ target: { files: files } });
+        }
+      });
+      
+      // 添加拖放区域点击事件（排除按钮点击）
+      $('#dropArea').on('click.fileDrop', function(e) {
+        // 如果点击的是按钮或其子元素，不处理
+        if ($(e.target).closest('button').length || $(e.target).is('button')) {
+          return;
+        }
+        // 如果点击的是文件输入框，不处理
+        if ($(e.target).is('input[type="file"]')) {
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        $('#fileInput').trigger('click');
+      });
+      
+      // 移除文件
+      $('#removeFileBtn').on('click.removeFile', resetFileInput);
+      
+      // 生成图表
+      $('#generateChartBtn').on('click.generateChart', generateChart);
+      
+      // 移动端菜单
+      $('#mobileMenuBtn').on('click.mobileMenu', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#mobileMenu').toggleClass('hidden');
+      });
+      
+      // 下载图表
+      $('#downloadChartBtn, #mobileDownloadChartBtn').on('click.downloadChart', downloadChart);
+      
+      // 重置
+      $('#resetBtn, #mobileResetBtn').on('click.resetAll', resetAll);
+      
+      // 图表设置
+      $('#pointSize').on('input.pointSize', function() {
+        chartConfig.pointSize = parseInt($(this).val());
+        $('#pointSizeValue').text(chartConfig.pointSize);
+      });
+      
+      $('#pointAlpha').on('input.pointAlpha', function() {
+        chartConfig.pointAlpha = parseFloat($(this).val());
+        $('#pointAlphaValue').text(chartConfig.pointAlpha);
+      });
+      
+      $('#chartTitle').on('input.chartTitle', function() {
+        chartConfig.chartTitle = $(this).val();
+      });
+      
+      $('#xAxisLabel').on('input.xAxisLabel', function() {
+        chartConfig.xAxisLabel = $(this).val();
+      });
+      
+      $('#yAxisLabel').on('input.yAxisLabel', function() {
+        chartConfig.yAxisLabel = $(this).val();
+      });
+      
+      // 监听X轴类型选择
+      $('input[name="xAxisType"]').on('change.xAxisType', function() {
+        chartConfig.xAxisType = $(this).val();
+      });
+      
+      // X轴标签间隔
+      $('#xAxisLabelInterval').on('change.xAxisInterval', function() {
+        chartConfig.xAxisLabelInterval = $(this).val();
+      });
+      
+      // X轴标签旋转角度
+      $('#xAxisLabelRotate').on('input.xAxisRotate', function() {
+        chartConfig.xAxisLabelRotate = parseInt($(this).val());
+        $('#xAxisLabelRotateValue').text(chartConfig.xAxisLabelRotate + '°');
+      });
+      
+      $('#updateChartBtn').on('click.updateChart', updateChartSettings);
+    }
+
+    // 处理文件选择 - 修复中文文件名和内容乱码
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      // 验证文件类型
+      if (!file.name.match(/\.(xlsx|xls)$/i)) {
+        showNotification('错误', '请上传Excel文件（.xlsx 或 .xls 格式）', 'error');
+        return;
+      }
+      
+      // 验证文件大小（限制为50MB）
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        showNotification('错误', '文件大小不能超过50MB', 'error');
+        return;
+      }
+      
+      if (file.size === 0) {
+        showNotification('错误', '文件为空，请选择有效的Excel文件', 'error');
+        return;
+      }
+      
+      // 显示文件信息（修复中文文件名乱码）
+      const fileName = decodeURIComponent(file.name);
+      $('#fileName').text(fileName);
+      $('#fileInfo').removeClass('hidden');
+      
+      // 读取Excel文件
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        try {
+          let workbook;
+          const fileExtension = file.name.split('.').pop().toLowerCase();
+          
+          // 根据文件类型选择最佳读取方式
+          if (fileExtension === 'xls') {
+            // 旧版Excel格式，尝试多种方式
+            try {
+              // 方式1：使用binary字符串
+              const binaryString = e.target.result;
+              workbook = XLSX.read(binaryString, { 
+                type: 'binary',
+                cellDates: false,
+                raw: false
+              });
+            } catch (err1) {
+              // 方式2：使用array buffer
+              const data = new Uint8Array(e.target.result);
+              workbook = XLSX.read(data, { 
+                type: 'array',
+                cellDates: false,
+                raw: false
+              });
+            }
+          } else {
+            // 新版Excel格式（.xlsx），优先使用array buffer
+            try {
+              const data = new Uint8Array(e.target.result);
+              workbook = XLSX.read(data, { 
+                type: 'array',
+                cellDates: false,
+                raw: false,
+                // 尝试添加编码选项
+                codepage: 65001 // UTF-8
+              });
+            } catch (err1) {
+              // 如果失败，回退到binary方式
+              const binaryString = e.target.result;
+              workbook = XLSX.read(binaryString, { 
+                type: 'binary',
+                cellDates: false,
+                raw: false
+              });
+            }
+          }
+          
+          // 获取第一个工作表
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          
+          // 转换为JSON - 尝试不同的选项组合
+          let tempData = XLSX.utils.sheet_to_json(worksheet, { 
+            header: 1,
+            raw: false,
+            defval: '',
+            blankrows: false
+          });
+          
+          // 检测乱码：检查是否包含常见的乱码字符模式
+          const firstRow = tempData[0] || [];
+          const hasPossibleGarbledText = firstRow.some(cell => {
+            if (typeof cell !== 'string' || cell.length === 0) return false;
+            // 检测常见的乱码模式：»ý²ãÅúºÅ 等字符
+            // 这些通常是UTF-8编码的中文被错误解释为Latin-1的结果
+            const garbledPattern = /[»ý²ãÅúºÅÎÑÙ×¼Ï]|[\x80-\xFF]{2,}/;
+            const hasGarbledChars = garbledPattern.test(cell);
+            // 同时检查是否不包含正常的中文字符
+            const hasChinese = /[\u4E00-\u9FA5]/.test(cell);
+            // 如果包含乱码字符但不包含正常中文，则可能是乱码
+            return hasGarbledChars && !hasChinese;
+          });
+          
+          if (hasPossibleGarbledText) {
+            // 尝试修复编码问题
+            // 乱码通常是因为UTF-8编码的中文被错误地按其他编码（如Latin-1）解释
+            tempData = tempData.map(row => {
+              if (!Array.isArray(row)) return row;
+              return row.map(cell => {
+                if (cell === null || cell === undefined) return '';
+                if (typeof cell === 'string' && cell.length > 0) {
+                  // 方法1：尝试将Latin-1编码的字符串转换为UTF-8
+                  try {
+                    // 将每个字符转换为字节（假设是Latin-1编码）
+                    const bytes = new Uint8Array(cell.length);
+                    for (let i = 0; i < cell.length; i++) {
+                      bytes[i] = cell.charCodeAt(i) & 0xFF;
+                    }
+                    // 使用UTF-8解码
+                    const decoder = new TextDecoder('utf-8', { fatal: false });
+                    const decoded = decoder.decode(bytes);
+                    // 如果解码后包含中文字符且长度合理，使用解码后的值
+                    if (/[\u4E00-\u9FA5]/.test(decoded) && decoded.length <= cell.length * 2) {
+                      return decoded;
+                    }
+                  } catch (e) {
+                    // 解码失败，继续尝试其他方法
+                  }
+                  
+                  // 方法2：尝试GBK/GB2312编码（常见的中文编码）
+                  try {
+                    // 如果浏览器支持，尝试GBK解码
+                    // 注意：大多数浏览器不支持GBK，这里只是尝试
+                    const bytes = new Uint8Array(cell.length);
+                    for (let i = 0; i < cell.length; i++) {
+                      bytes[i] = cell.charCodeAt(i) & 0xFF;
+                    }
+                    // 尝试使用TextDecoder with GBK（如果支持）
+                    // 如果不支持，跳过此方法
+                  } catch (e) {
+                    // GBK解码失败
+                  }
+                }
+                return cell;
+              });
+            });
+            
+            // 如果修复后仍然有乱码，尝试使用原始数据但使用不同的XLSX选项
+            const stillHasGarbledText = tempData[0] && tempData[0].some(cell => 
+              typeof cell === 'string' && /[»ý²ãÅúºÅ]/.test(cell)
+            );
+            
+            if (stillHasGarbledText) {
+              // 最后尝试：使用base64编码然后重新读取
+              try {
+                const data = new Uint8Array(e.target.result);
+                // 尝试不同的读取选项
+                const workbook2 = XLSX.read(data, { 
+                  type: 'array',
+                  cellDates: false,
+                  raw: true, // 使用原始值
+                  dense: false
+                });
+                const worksheet2 = workbook2.Sheets[workbook2.SheetNames[0]];
+                const rawData = XLSX.utils.sheet_to_json(worksheet2, { 
+                  header: 1,
+                  raw: true,
+                  defval: '',
+                  blankrows: false
+                });
+                
+                // 对原始数据进行编码修复
+                tempData = rawData.map(row => {
+                  if (!Array.isArray(row)) return row;
+                  return row.map(cell => {
+                    if (cell === null || cell === undefined) return '';
+                    if (typeof cell === 'string') {
+                      // 尝试修复编码
+                      const bytes = new Uint8Array(cell.length);
+                      for (let i = 0; i < cell.length; i++) {
+                        bytes[i] = cell.charCodeAt(i) & 0xFF;
+                      }
+                      const decoder = new TextDecoder('utf-8', { fatal: false });
+                      const decoded = decoder.decode(bytes);
+                      if (/[\u4E00-\u9FA5]/.test(decoded)) {
+                        return decoded;
+                      }
+                    }
+                    return cell;
+                  });
+                });
+              } catch (e) {
+                console.warn('编码修复失败，使用原始数据:', e);
+              }
+            }
+          }
+          
+          excelData = tempData;
+          
+          // 验证数据
+          if (!excelData || excelData.length < 2) {
+            showNotification('错误', 'Excel文件数据格式不正确，至少需要2行数据（包含表头）', 'error');
+            resetFileInput();
+            return;
+          }
+          
+          if (!excelData[0] || excelData[0].length < 2) {
+            showNotification('错误', 'Excel文件数据格式不正确，至少需要2列数据', 'error');
+            resetFileInput();
+            return;
+          }
+          
+          // 检查是否有有效的非空数据行
+          const hasValidData = excelData.slice(1).some(row => 
+            row && row.some(cell => cell !== undefined && cell !== null && cell !== '')
+          );
+          if (!hasValidData) {
+            showNotification('错误', 'Excel文件中没有有效的数据行', 'error');
+            resetFileInput();
+            return;
+          }
+          
+          // 显示数据预览
+          renderDataPreview();
+          
+          // 隐藏空状态
+          $('#emptyState').addClass('hidden');
+          
+          showNotification('成功', 'Excel文件上传并解析成功', 'success');
+        } catch (error) {
+          console.error('读取Excel文件出错:', error);
+          showNotification('错误', '读取Excel文件时发生错误', 'error');
+          resetFileInput();
+        }
+      };
+      
+      reader.onerror = function() {
+        showNotification('错误', '读取文件时发生错误', 'error');
+        resetFileInput();
+      };
+      
+      // 根据文件类型选择读取方式
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      if (fileExtension === 'xls') {
+        // 旧版Excel格式，使用binary字符串
+        reader.readAsBinaryString(file);
+      } else {
+        // 新版Excel格式，使用array buffer（对.xlsx文件更可靠）
+        reader.readAsArrayBuffer(file);
+      }
+    }
+
+    // 渲染数据预览
+    function renderDataPreview() {
+      if (!excelData) return;
+      
+      // 清空表格
+      $('#tableHeader').empty();
+      $('#tableBody').empty();
+      
+      // 渲染表头
+      const headers = excelData[0];
+      $.each(headers, function(index, header) {
+        const th = $('<th>')
+          .text(header || `列${index + 1}`)
+          .addClass('px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider');
+        $('#tableHeader').append(th);
+      });
+      
+      // 渲染表体（最多显示10行）
+      const rowsToShow = Math.min(excelData.length - 1, 10);
+      for (let i = 1; i <= rowsToShow; i++) {
+        const row = $('<tr>').addClass(i % 2 === 0 ? 'bg-gray-50' : 'bg-white');
+        
+        $.each(excelData[i], function(index, cell) {
+          const td = $('<td>')
+            .text(cell !== undefined ? cell : '')
+            .addClass('px-4 py-3 whitespace-nowrap text-sm text-gray-500');
+          
+          // 第一列（X轴）加粗
+          if (index === 0) {
+            td.addClass('font-medium text-primary');
+          }
+          
+          row.append(td);
+        });
+        
+        $('#tableBody').append(row);
+      }
+      
+      // 如果有更多数据，显示省略行
+      if (excelData.length > 11) {
+        const moreRow = $('<tr>');
+        const moreTd = $('<td>')
+          .attr('colSpan', headers.length)
+          .addClass('px-4 py-3 text-center text-sm text-gray-400')
+          .text(`... 还有 ${excelData.length - 10} 行数据未显示`);
+        moreRow.append(moreTd);
+        $('#tableBody').append(moreRow);
+      }
+      
+      // 显示数据预览区域
+      $('#dataPreviewSection').removeClass('hidden');
+    }
+
+    // 判断是否为数值
+    function isNumeric(value) {
+      if (value === null || value === undefined || value === '') return false;
+      return !isNaN(parseFloat(value)) && isFinite(value);
+    }
+
+    // 计算X轴标签显示间隔
+    function calculateXAxisInterval(dataLength, intervalSetting) {
+      if (intervalSetting === 'auto') {
+        // 根据数据点数量自动计算最佳间隔
+        if (dataLength <= 10) {
+          return 0; // 10个以内显示全部
+        } else if (dataLength <= 20) {
+          return 0; // 20个以内显示全部（旋转后可以容纳）
+        } else if (dataLength <= 50) {
+          return 1; // 每2个显示1个
+        } else if (dataLength <= 100) {
+          return 2; // 每3个显示1个
+        } else if (dataLength <= 200) {
+          return 4; // 每5个显示1个
+        } else if (dataLength <= 500) {
+          return 9; // 每10个显示1个
+        } else {
+          return Math.floor(dataLength / 20); // 大约显示20个标签
+        }
+      } else {
+        // 使用用户指定的间隔
+        return parseInt(intervalSetting) || 0;
+      }
+    }
+
+    // 计算Y轴的自适应最小值
+    function calculateYAxisMin(value) {
+      if (!value || !isFinite(value.min) || !isFinite(value.max)) return null;
+      const range = value.max - value.min;
+      if (range === 0) {
+        return value.min - 1;
+      }
+      return value.min - range * 0.05;
+    }
+
+    // 计算Y轴的自适应最大值
+    function calculateYAxisMax(value) {
+      if (!value || !isFinite(value.min) || !isFinite(value.max)) return null;
+      const range = value.max - value.min;
+      if (range === 0) {
+        return value.max + 1;
+      }
+      return value.max + range * 0.05;
+    }
+
+    // 生成散点图（ECharts版）- 修复中文乱码和X轴汉字支持
+    function generateChart() {
+      if (!excelData) return;
+      
+      // 显示加载状态
+      $('#chartLoading').removeClass('hidden');
+      
+      // 延迟执行，让加载动画显示
+      setTimeout(() => {
+        try {
+          // 准备图表数据
+          const headers = excelData[0];
+          const xRawData = excelData.slice(1).map(row => row[0] !== undefined ? row[0] : '');
+          
+          // 确定X轴类型
+          let xAxisType = chartConfig.xAxisType;
+          if (xAxisType === 'auto') {
+            // 自动检测：如果超过80%是数值，则为数值轴，否则为分类轴
+            if (xRawData.length === 0) {
+              showNotification('错误', 'X轴数据为空，无法生成图表', 'error');
+              $('#chartLoading').addClass('hidden');
+              return;
+            }
+            const numericCount = xRawData.filter(val => isNumeric(val)).length;
+            xAxisType = (numericCount / xRawData.length) >= 0.8 ? 'value' : 'category';
+          }
+          
+          // 处理X轴数据
+          // 散点图：合并相同的X轴值；折线图：不合并，保留所有数据点
+          let xAxisData = [];
+          let xValueToIndexMap = new Map(); // X值到索引的映射（仅用于散点图）
+          const series = [];
+          const colors = [
+            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+            '#ec4899', '#06b6d4', '#6b7280', '#1f2937', '#f97316'
+          ];
+          
+          // 为分类轴准备X轴数据
+          if (xAxisType === 'category') {
+            if (chartConfig.chartType === 'scatter') {
+              // 散点图：合并相同的X轴值（去重，保留顺序）
+              const uniqueXValues = [];
+              xRawData.forEach((val, index) => {
+                const xStr = val.toString();
+                if (!xValueToIndexMap.has(xStr)) {
+                  xValueToIndexMap.set(xStr, uniqueXValues.length);
+                  uniqueXValues.push(xStr);
+                }
+              });
+              xAxisData = uniqueXValues;
+            } else {
+              // 折线图：不合并，保留所有X轴值
+              xAxisData = xRawData.map(val => val.toString());
+            }
+          }
+          
+          // 处理每个系列数据
+          for (let i = 1; i < headers.length; i++) {
+            const yRawData = excelData.slice(1).map(row => row[i]);
+            const data = [];
+            
+            for (let j = 0; j < xRawData.length; j++) {
+              const xVal = xRawData[j];
+              const yVal = yRawData[j];
+              
+              // Y轴必须是数值
+              if (yVal === undefined || yVal === null || yVal === '' || !isNumeric(yVal)) {
+                continue;
+              }
+              
+              const yNum = parseFloat(yVal);
+              
+              if (xAxisType === 'value') {
+                // 数值轴：X轴也必须是数值
+                if (isNumeric(xVal)) {
+                  const xNum = parseFloat(xVal);
+                  data.push([xNum, yNum]); // 相同的X值会自然重叠（散点图）或显示为多个点（折线图）
+                }
+              } else {
+                // 分类轴
+                if (chartConfig.chartType === 'scatter') {
+                  // 散点图：使用映射后的索引，相同X值使用相同索引（合并）
+                  const xStr = xVal.toString();
+                  const xIndex = xValueToIndexMap.get(xStr);
+                  if (xIndex !== undefined) {
+                    data.push([xIndex, yNum]);
+                  }
+                } else {
+                  // 折线图：使用原始索引，不合并
+                  data.push([j, yNum]);
+                }
+              }
+            }
+            
+            if (data.length > 0) {
+              // 根据图表类型处理数据
+              let seriesData = data;
+              let seriesConfig = {
+                name: headers[i] || `系列${i}`,
+                type: chartConfig.chartType, // 'scatter' 或 'line'
+                data: seriesData,
+                itemStyle: {
+                  color: colors[i % colors.length],
+                  opacity: chartConfig.pointAlpha
+                }
+              };
+              
+              if (chartConfig.chartType === 'scatter') {
+                // 散点图配置
+                seriesConfig.symbolSize = chartConfig.pointSize;
+                seriesConfig.emphasis = {
+                  itemStyle: {
+                    symbolSize: chartConfig.pointSize + 4
+                  }
+                };
+              } else if (chartConfig.chartType === 'line') {
+                // 折线图配置
+                // 对数据按X轴值排序（对于数值轴）
+                if (xAxisType === 'value') {
+                  seriesData = data.slice().sort((a, b) => a[0] - b[0]);
+                } else {
+                  // 分类轴已经按索引排序，但需要确保数据按X轴索引排序
+                  seriesData = data.slice().sort((a, b) => a[0] - b[0]);
+                }
+                seriesConfig.data = seriesData;
+                seriesConfig.smooth = false; // 是否平滑曲线
+                seriesConfig.symbol = 'circle'; // 数据点标记
+                seriesConfig.symbolSize = chartConfig.pointSize;
+                seriesConfig.lineStyle = {
+                  width: 2
+                };
+                seriesConfig.emphasis = {
+                  focus: 'series' // 鼠标悬停时高亮整个系列
+                };
+              }
+              
+              series.push(seriesConfig);
+            }
+          }
+          
+          if (series.length === 0) {
+            showNotification('错误', '没有找到有效的数值数据用于生成图表', 'error');
+            $('#chartLoading').addClass('hidden');
+            return;
+          }
+
+          // 先显示图表区域（确保容器有实际宽高）
+          $('#chartSection').removeClass('hidden');
+          // 强制触发浏览器重绘，确保容器尺寸已更新
+          void document.getElementById('chartSection').offsetWidth;
+
+          // 初始化ECharts实例
+          const chartDom = document.getElementById('scatterChart');
+          if (scatterChart) {
+            scatterChart.dispose();
+          }
+          scatterChart = echarts.init(chartDom);
+          scatterChart.clear();
+          
+          // ECharts配置项 - 支持中文和分类轴
+          const option = {
+            title: {
+              text: chartConfig.chartTitle || '散点图',
+              left: 'center',
+              textStyle: {
+                fontSize: 16,
+                fontWeight: 'bold',
+                fontFamily: 'inherit' // 继承中文字体
+              },
+              padding: [0, 0, 20, 0]
+            },
+            tooltip: {
+              trigger: 'item',
+              formatter: function(params) {
+                if (params.data && params.data.length === 2) {
+                  const xLabel = xAxisType === 'category' 
+                    ? xAxisData[params.data[0]] 
+                    : params.data[0].toFixed(2);
+                  return `${params.seriesName}: (${xLabel}, ${params.data[1].toFixed(2)})`;
+                }
+                return `${params.seriesName}: 无效数据`;
+              },
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              textStyle: {
+                fontSize: 12,
+                fontFamily: 'inherit'
+              },
+              padding: 10
+            },
+            legend: {
+              top: 30,
+              left: 'center',
+              textStyle: {
+                fontSize: 12,
+                fontFamily: 'inherit'
+              },
+              itemWidth: 12,
+              itemHeight: 12,
+              padding: [0, 15],
+              orient: 'horizontal',
+              width: '80%',
+              overflow: 'scroll' // 处理图例过多的情况
+            },
+            grid: {
+              left: xAxisType === 'category' ? '15%' : '10%', // 分类轴预留更多空间
+              right: '5%',
+              bottom: xAxisType === 'category' ? '20%' : '15%', // 分类轴底部预留更多空间
+              top: '15%',
+              containLabel: true
+            },
+            xAxis: {
+              type: xAxisType,
+              name: chartConfig.xAxisLabel || 'X轴',
+              nameTextStyle: {
+                fontSize: 14,
+                fontFamily: 'inherit'
+              },
+              data: xAxisType === 'category' ? xAxisData : null,
+              axisLine: {
+                lineStyle: {
+                  color: '#ccc'
+                }
+              },
+              splitLine: {
+                lineStyle: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              },
+              axisLabel: {
+                fontSize: 11,
+                fontFamily: 'inherit',
+                rotate: xAxisType === 'category' ? chartConfig.xAxisLabelRotate : 0, // 可配置的旋转角度
+                interval: calculateXAxisInterval(xAxisData.length, chartConfig.xAxisLabelInterval), // 智能计算间隔
+                overflow: 'break' // 超出时换行，不截断
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: chartConfig.yAxisLabel || 'Y轴',
+              nameTextStyle: {
+                fontSize: 14,
+                fontFamily: 'inherit'
+              },
+              scale: true,
+              min: calculateYAxisMin,
+              max: calculateYAxisMax,
+              axisLine: {
+                lineStyle: {
+                  color: '#ccc'
+                }
+              },
+              splitLine: {
+                lineStyle: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              },
+              axisLabel: {
+                fontSize: 11,
+                fontFamily: 'inherit'
+              }
+            },
+            series: series,
+            animation: true,
+            animationDuration: 1000,
+            animationEasingUpdate: 'quinticInOut'
+          };
+          
+          // 渲染图表
+          scatterChart.setOption(option);
+          
+          // 响应窗口 resize（先移除旧的监听器，避免重复绑定）
+          $(window).off('resize.chartResize').on('resize.chartResize', function() {
+            if (scatterChart) {
+              scatterChart.resize();
+            }
+          });
+          
+          // 滚动到图表区域
+          document.getElementById('chartSection').scrollIntoView({ behavior: 'smooth' });
+          
+          // 初始化X轴设置控件
+          $('#xAxisLabelRotate').val(chartConfig.xAxisLabelRotate);
+          $('#xAxisLabelRotateValue').text(chartConfig.xAxisLabelRotate + '°');
+          
+          if (xAxisType === 'category') {
+            // 根据数据量自动设置标签间隔（仅在首次生成时）
+            if (chartConfig.xAxisLabelInterval === 'auto') {
+              const autoInterval = calculateXAxisInterval(xAxisData.length, 'auto');
+              if (autoInterval > 0) {
+                // 找到对应的选项值
+                const intervalOptions = ['0', '1', '2', '4', '9', '19', '49'];
+                const closestOption = intervalOptions.find(opt => parseInt(opt) >= autoInterval) || 'auto';
+                $('#xAxisLabelInterval').val(closestOption);
+              } else {
+                $('#xAxisLabelInterval').val('0');
+              }
+            } else {
+              $('#xAxisLabelInterval').val(chartConfig.xAxisLabelInterval);
+            }
+          }
+          
+          const chartTypeName = chartConfig.chartType === 'line' ? '折线图' : '散点图';
+          showNotification('成功', `${chartTypeName}生成成功（X轴类型：${xAxisType === 'category' ? '分类轴' : '数值轴'}）`, 'success');
+        } catch (error) {
+          console.error('生成图表出错:', error);
+          showNotification('错误', '生成图表时发生错误: ' + error.message, 'error');
+        } finally {
+          $('#chartLoading').addClass('hidden');
+        }
+      }, 500);
+    }
+
+    // 更新图表设置（ECharts版）
+    function updateChartSettings() {
+      if (!scatterChart) {
+        showNotification('错误', '请先生成图表', 'error');
+        return;
+      }
+      
+      try {
+        // 获取新的图表类型
+        const newChartType = $('input[name="chartType"]:checked').val() || 'scatter';
+        const chartTypeChanged = chartConfig.chartType !== newChartType;
+        
+        // 更新配置
+        chartConfig.chartTitle = $('#chartTitle').val().trim() || '散点图';
+        chartConfig.xAxisLabel = $('#xAxisLabel').val().trim() || 'X轴';
+        chartConfig.yAxisLabel = $('#yAxisLabel').val().trim() || 'Y轴';
+        chartConfig.pointSize = parseInt($('#pointSize').val()) || 8;
+        chartConfig.pointAlpha = parseFloat($('#pointAlpha').val()) || 0.7;
+        chartConfig.xAxisLabelInterval = $('#xAxisLabelInterval').val() || 'auto';
+        chartConfig.xAxisLabelRotate = parseInt($('#xAxisLabelRotate').val()) || 45;
+        chartConfig.chartType = newChartType;
+        
+        // 确保数值在有效范围内
+        chartConfig.pointSize = Math.min(Math.max(chartConfig.pointSize, 4), 20);
+        chartConfig.pointAlpha = Math.min(Math.max(chartConfig.pointAlpha, 0.2), 1);
+        
+        // 如果图表类型改变了，需要重新生成整个图表
+        if (chartTypeChanged) {
+          generateChart();
+          return;
+        }
+        
+        // 获取当前X轴类型
+        let xAxisType = chartConfig.xAxisType;
+        const headers = excelData[0];
+        const xRawData = excelData.slice(1).map(row => row[0] !== undefined ? row[0] : '');
+        
+        // 如果是自动检测，重新判断
+        if (xAxisType === 'auto') {
+          const numericCount = xRawData.filter(val => isNumeric(val)).length;
+          xAxisType = (numericCount / xRawData.length) >= 0.8 ? 'value' : 'category';
+        }
+        
+        // 处理X轴数据（与generateChart中的逻辑保持一致）
+        // 散点图：合并相同的X轴值；折线图：不合并
+        let xAxisData = [];
+        let xValueToIndexMap = new Map();
+        
+        if (xAxisType === 'category') {
+          if (chartConfig.chartType === 'scatter') {
+            // 散点图：合并相同的X轴值（去重，保留顺序）
+            const uniqueXValues = [];
+            xRawData.forEach((val) => {
+              const xStr = val.toString();
+              if (!xValueToIndexMap.has(xStr)) {
+                xValueToIndexMap.set(xStr, uniqueXValues.length);
+                uniqueXValues.push(xStr);
+              }
+            });
+            xAxisData = uniqueXValues;
+          } else {
+            // 折线图：不合并，保留所有X轴值
+            xAxisData = xRawData.map(val => val.toString());
+          }
+        }
+        
+        // 更新ECharts配置项
+        const option = {
+          title: {
+            text: chartConfig.chartTitle,
+            textStyle: {
+              fontFamily: 'inherit'
+            }
+          },
+          xAxis: {
+            name: chartConfig.xAxisLabel,
+            type: xAxisType,
+            data: xAxisType === 'category' ? xAxisData : null,
+            nameTextStyle: {
+              fontFamily: 'inherit'
+            },
+            axisLabel: {
+              fontFamily: 'inherit',
+              rotate: xAxisType === 'category' ? chartConfig.xAxisLabelRotate : 0,
+              interval: calculateXAxisInterval(xAxisData.length, chartConfig.xAxisLabelInterval),
+              overflow: 'break' // 超出时换行，不截断
+            }
+          },
+          yAxis: {
+            name: chartConfig.yAxisLabel,
+            nameTextStyle: {
+              fontFamily: 'inherit'
+            },
+            scale: true,
+            min: calculateYAxisMin,
+            max: calculateYAxisMax,
+            axisLabel: {
+              fontFamily: 'inherit'
+            }
+          },
+          legend: {
+            textStyle: {
+              fontFamily: 'inherit'
+            }
+          },
+          tooltip: {
+            textStyle: {
+              fontFamily: 'inherit'
+            },
+            formatter: function(params) {
+              if (params.data && params.data.length === 2) {
+                const xLabel = xAxisType === 'category' 
+                  ? xAxisData[params.data[0]] 
+                  : params.data[0].toFixed(2);
+                return `${params.seriesName}: (${xLabel}, ${params.data[1].toFixed(2)})`;
+              }
+              return `${params.seriesName}: 无效数据`;
+            }
+          },
+          series: []
+        };
+        
+        // 更新每个系列的样式
+        const chartOption = scatterChart.getOption();
+        if (!chartOption || !chartOption.series) {
+          showNotification('错误', '无法获取图表配置', 'error');
+          return;
+        }
+        
+        // 处理getOption()可能返回数组的情况
+        const originalSeries = Array.isArray(chartOption) ? chartOption[0].series : chartOption.series;
+        if (!originalSeries || !Array.isArray(originalSeries)) {
+          showNotification('错误', '图表系列数据无效', 'error');
+          return;
+        }
+        
+        const colors = [
+          '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+          '#ec4899', '#06b6d4', '#6b7280', '#1f2937', '#f97316'
+        ];
+        
+        // 只更新样式，不改变图表类型（图表类型改变时已在上面重新生成）
+        originalSeries.forEach((serie, index) => {
+          const seriesUpdate = {
+            id: serie.id,
+            type: chartConfig.chartType, // 保持当前图表类型
+            itemStyle: {
+              color: colors[index % colors.length],
+              opacity: chartConfig.pointAlpha
+            }
+          };
+          
+          if (chartConfig.chartType === 'scatter') {
+            seriesUpdate.symbolSize = chartConfig.pointSize;
+            seriesUpdate.emphasis = {
+              itemStyle: {
+                symbolSize: chartConfig.pointSize + 4
+              }
+            };
+          } else if (chartConfig.chartType === 'line') {
+            seriesUpdate.symbolSize = chartConfig.pointSize;
+            seriesUpdate.lineStyle = {
+              width: 2
+            };
+            seriesUpdate.emphasis = {
+              focus: 'series'
+            };
+          }
+          
+          option.series.push(seriesUpdate);
+        });
+        
+        // 应用更新
+        scatterChart.setOption(option);
+        
+        showNotification('成功', '图表设置已更新', 'success');
+      } catch (error) {
+        console.error('更新图表设置出错:', error);
+        showNotification('错误', '更新图表设置时发生错误', 'error');
+      }
+    }
+
+    // 下载图表（ECharts版）
+    function downloadChart() {
+      if (!scatterChart) {
+        showNotification('错误', '没有可下载的图表', 'error');
+        return;
+      }
+      
+      try {
+        // ECharts自带的下载方法
+        const dataUrl = scatterChart.getDataURL({
+          type: 'png',
+          pixelRatio: 2, // 高清图
+          backgroundColor: '#ffffff',
+          excludeComponents: ['toolbox']
+        });
+        
+        // 创建下载链接 - 修复中文文件名乱码
+        const link = document.createElement('a');
+        const fileName = `${chartConfig.chartTitle || '散点图'}_${new Date().toISOString().slice(0, 10)}.png`;
+        link.download = fileName;
+        link.href = dataUrl;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // 注意：dataUrl是base64字符串，不是Blob URL，不需要调用revokeObjectURL
+        
+        showNotification('成功', '图表下载已开始', 'success');
+      } catch (error) {
+        console.error('下载图表出错:', error);
+        showNotification('错误', '下载图表时发生错误', 'error');
+      }
+    }
+
+    // 重置文件输入
+    function resetFileInput() {
+      $('#fileInput').val('');
+      $('#fileInfo').addClass('hidden');
+      $('#dataPreviewSection').addClass('hidden');
+      excelData = null;
+      
+      // 如果有图表，保留图表区域
+      if (!scatterChart) {
+        $('#emptyState').removeClass('hidden');
+      }
+    }
+
+    // 重置所有
+    function resetAll() {
+      resetFileInput();
+      
+      // 销毁图表
+      if (scatterChart) {
+        scatterChart.dispose();
+        scatterChart = null;
+      }
+      
+      // 清理resize事件监听器
+      $(window).off('resize.chartResize');
+      
+      // 隐藏图表区域
+      $('#chartSection').addClass('hidden');
+      
+      // 重置图表设置
+      chartConfig = {
+        pointSize: 8,
+        pointAlpha: 0.7,
+        chartTitle: '散点图',
+        xAxisLabel: 'X轴',
+        yAxisLabel: 'Y轴',
+        xAxisType: 'auto',
+        xAxisLabelInterval: 'auto',
+        xAxisLabelRotate: 45,
+        chartType: 'scatter'
+      };
+      
+      // 重置表单
+      $('#chartTitle').val(chartConfig.chartTitle);
+      $('#xAxisLabel').val(chartConfig.xAxisLabel);
+      $('#yAxisLabel').val(chartConfig.yAxisLabel);
+      $('#pointSize').val(chartConfig.pointSize);
+      $('#pointSizeValue').text(chartConfig.pointSize);
+      $('#pointAlpha').val(chartConfig.pointAlpha);
+      $('#pointAlphaValue').text(chartConfig.pointAlpha);
+      $('#xAxisTypeAuto').prop('checked', true);
+      $('#chartTypeScatter').prop('checked', true);
+      $('#xAxisLabelInterval').val(chartConfig.xAxisLabelInterval);
+      $('#xAxisLabelRotate').val(chartConfig.xAxisLabelRotate);
+      $('#xAxisLabelRotateValue').text(chartConfig.xAxisLabelRotate + '°');
+      
+      // 显示空状态
+      $('#emptyState').removeClass('hidden');
+      
+      showNotification('信息', '已重置所有设置', 'info');
+    }
+
+    // 显示通知
+    function showNotification(title, message, type = 'info') {
+      const $notification = $('#notification');
+      const $notificationIcon = $('#notificationIcon');
+      const $notificationText = $('#notificationText');
+      
+      $notificationText.text(`${title}: ${message}`);
+      
+      // 设置图标和样式
+      $notification.removeClass('bg-green-500 bg-red-500 bg-yellow-500 bg-blue-500 text-white');
+      $notificationIcon.removeClass('fa-check-circle fa-exclamation-circle fa-exclamation-triangle fa-info-circle');
+      
+      switch(type) {
+        case 'success':
+          $notification.addClass('bg-green-500 text-white');
+          $notificationIcon.addClass('fa-check-circle');
+          break;
+        case 'error':
+          $notification.addClass('bg-red-500 text-white');
+          $notificationIcon.addClass('fa-exclamation-circle');
+          break;
+        case 'warning':
+          $notification.addClass('bg-yellow-500 text-white');
+          $notificationIcon.addClass('fa-exclamation-triangle');
+          break;
+        default:
+          $notification.addClass('bg-blue-500 text-white');
+          $notificationIcon.addClass('fa-info-circle');
+      }
+      
+      // 显示通知
+      $notification.removeClass('translate-y-20 opacity-0');
+      
+      // 3秒后隐藏
+      setTimeout(() => {
+        $notification.addClass('translate-y-20 opacity-0');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
