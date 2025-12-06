@@ -235,7 +235,7 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">下边距（%）</label>
-            <input type="number" id="gridBottom" min="5" max="30" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="5">
+            <input type="number" id="gridBottom" min="0" max="40" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="5">
           </div>
         </div>
         <!-- 坐标轴颜色深浅设置 -->
@@ -553,7 +553,10 @@
       });
       
       $('#gridBottom').on('input.gridBottom', function() {
-        chartConfig.gridBottom = clampGridValue($(this).val(), 5, 40, 5);
+        const val = $(this).val();
+        if (val !== '' && !isNaN(parseFloat(val))) {
+          chartConfig.gridBottom = Math.min(Math.max(parseFloat(val), 0), 40);
+        }
       });
       
       // 坐标轴颜色深浅
@@ -1127,7 +1130,7 @@
             grid: {
               left: `${chartConfig.gridLeft}%`,
               right: `${chartConfig.gridRight}%`,
-              bottom: `${xAxisType === 'category' ? Math.max(chartConfig.gridBottom, 20) : chartConfig.gridBottom}%`,
+              bottom: `${chartConfig.gridBottom}%`,
               top: `${chartConfig.gridTop}%`,
               containLabel: true
             },
@@ -1154,7 +1157,7 @@
                 fontSize: 11,
                 fontFamily: 'inherit',
                 color: getAxisColor(chartConfig.axisColorDarkness),
-                rotate: xAxisType === 'category' ? chartConfig.xAxisLabelRotate : 0, // 可配置的旋转角度
+                rotate: chartConfig.xAxisLabelRotate, // 可配置的旋转角度
                 interval: calculateXAxisInterval(xAxisData.length, chartConfig.xAxisLabelInterval), // 智能计算间隔
                 overflow: 'break' // 超出时换行，不截断
               }
@@ -1258,12 +1261,18 @@
         chartConfig.pointSize = parseInt($('#pointSize').val()) || 8;
         chartConfig.pointAlpha = parseFloat($('#pointAlpha').val()) || 0.7;
         chartConfig.xAxisLabelInterval = $('#xAxisLabelInterval').val() || 'auto';
-        chartConfig.xAxisLabelRotate = parseInt($('#xAxisLabelRotate').val()) || 45;
+        const rotateVal = $('#xAxisLabelRotate').val();
+        chartConfig.xAxisLabelRotate = (rotateVal !== '' && !isNaN(parseInt(rotateVal))) 
+          ? parseInt(rotateVal) 
+          : chartConfig.xAxisLabelRotate; // 如果输入无效，保持原值
         chartConfig.chartType = newChartType;
         chartConfig.gridLeft = clampGridValue($('#gridLeft').val(), 0, 30, 5);
         chartConfig.gridRight = clampGridValue($('#gridRight').val(), 0, 30, 5);
         chartConfig.gridTop = clampGridValue($('#gridTop').val(), 5, 30, 10);
-        chartConfig.gridBottom = clampGridValue($('#gridBottom').val(), 5, 40, 5);
+        const gridBottomVal = $('#gridBottom').val();
+        chartConfig.gridBottom = (gridBottomVal !== '' && !isNaN(parseFloat(gridBottomVal))) 
+          ? Math.min(Math.max(parseFloat(gridBottomVal), 0), 40) 
+          : chartConfig.gridBottom; // 如果输入无效，保持原值
         chartConfig.axisColorDarkness = parseInt($('#axisColorDarkness').val()) || 50;
         
         // 确保数值在有效范围内
@@ -1322,7 +1331,7 @@
             left: `${chartConfig.gridLeft}%`,
             right: `${chartConfig.gridRight}%`,
             top: `${chartConfig.gridTop}%`,
-            bottom: `${xAxisType === 'category' ? Math.max(chartConfig.gridBottom, 20) : chartConfig.gridBottom}%`,
+            bottom: `${chartConfig.gridBottom}%`,
             containLabel: true
           },
           xAxis: {
